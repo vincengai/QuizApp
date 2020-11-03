@@ -1,32 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import {Questionaire } from './components';
 
-const API_URL = 'https://opentdb.com/api.php?amount=10&category=32&difficulty=medium';
+const API_URL = 'https://opentdb.com/api.php?amount=10&category=32&difficulty=medium&type=multiple';
 
 function App() {
   const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(undefined)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [score, setScore] = useState(0)
+  const [showAnswers, setShowAnswers] = useState(false);
 
   useEffect( () => {
     fetch(API_URL)
       .then(res => res.json())
       .then((data) => {
         setQuestions(data.results)
-        setCurrentQuestion(data.results[0])
+        setCurrentIndex(0)
       });
 
   }, [])  
 
   const handleAnswer = (answer) => {
-    // etc
+    if (!showAnswers) {
+      // prevents double answers
+      if (answer === questions[currentIndex].correct_answer) {
+        setScore(score + 1);
+      }
+    }
 
-    // show another question
-    // change score if correct
-    // 
+    setShowAnswers(true)
+
+  };
+
+  const handleNextQuestion = () => {
+    setShowAnswers(false);
+
+    setCurrentIndex(currentIndex + 1);
   }
+
     return questions.length > 0 ? (
       <div className="container">
-        <Questionaire data={currentQuestion} handleAnswer={handleAnswer}/>
+        {currentIndex >= questions.length ? (
+          <h1 className="text-3xl text-white font-bold">Game Over! Your score was {score}. </h1>
+        ) : (
+          <Questionaire 
+            data={questions[currentIndex]} 
+            handleAnswer={handleAnswer} 
+            showAnswers={showAnswers}
+            handleNextQuestion={handleNextQuestion}
+          />
+        )}
       </div>
     ) : (
       <h2 className="text-2xl text-white font-bold">Loading..</h2>
